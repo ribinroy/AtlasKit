@@ -15,6 +15,7 @@ class AddAnnouncement extends React.Component{
         super()
         this.state = {
             modalOpen: true,
+            editModelOpen: false,
             head: {
                 cells:[
                     {key:"name", name: "announcementTitle", content:"Title", isSortable: true},
@@ -31,7 +32,7 @@ class AddAnnouncement extends React.Component{
                 ]
             },
             announcementsArray: [],
-
+            editInformations: false,
             caption: "Announcements",
             rows: []
         }
@@ -39,6 +40,8 @@ class AddAnnouncement extends React.Component{
         this.closeModal = this.closeModal.bind(this);
         this.saveModal = this.saveModal.bind(this);
         this.deleteThisItem = this.deleteThisItem.bind(this);
+        this.editSaveModal = this.editSaveModal.bind(this);
+        
     }
 
     handleAnnouncementClick(event){
@@ -49,7 +52,8 @@ class AddAnnouncement extends React.Component{
 
     closeModal(){
         this.setState({
-            modalOpen: false
+            modalOpen: false,
+            editModelOpen: false
         })
     }
 
@@ -71,15 +75,53 @@ class AddAnnouncement extends React.Component{
         array.forEach(function(item, itemIndex){
             index = item.indexKey === thisItemIndex?itemIndex:index
         })
-        //TO Be done
+        var currentData = {};
+        array[index].cells.forEach(function(item){
+            currentData[item.name] = item.content
+        })
+        currentData["editKey"] =  array[index].indexKey;
+        this.setState({
+            editInformations:currentData,
+        }, function(){
+            this.setState({
+                editModelOpen: true
+            });
+        })
+        debugger;
+    }
+
+    editSaveModal(data){
+        var uniqueIndex = data.editKey;
+        var rowItem = this.getSavedDataObject(data, uniqueIndex);
+        var array = [...this.state.rows]; // make a separate copy of the array
+        var index = false;
+        array.forEach(function(item, itemIndex){
+            index = item.indexKey === uniqueIndex?itemIndex:index
+        })
+        
+        array.splice(index, 1);
+        array.splice(index,0,{cells:rowItem, indexKey: uniqueIndex})
+        debugger;
+        this.setState({rows: array});
     }
 
     saveModal(data){
         // var joined = this.state.announcementsArray.concat(data);
         // this.setState({ announcementsArray: joined })
-        debugger;
-        var rowItem = [];
+       
+        // Object.keys(data).forEach(function(item){
+        //     rowItem.push({content:data[item], name:item})
+        // })
+        debugger
         var uniqueIndex = data.announcementTitle + "_" + this.state.rows.length + 1;
+        var rowItem = this.getSavedDataObject(data, uniqueIndex);
+        var joined = this.state.rows.concat([{cells:rowItem, indexKey: uniqueIndex}]);
+        this.setState({ rows: joined })
+        console.log(joined)
+    }
+
+    getSavedDataObject(data, uniqueIndex){
+        var rowItem = [];
         var _this = this;
         this.state.head.cells.forEach(function(head){
             var value = "";
@@ -107,12 +149,7 @@ class AddAnnouncement extends React.Component{
             var pushObject = {content:value, name:head.name}
             rowItem.push(pushObject)
         })
-        // Object.keys(data).forEach(function(item){
-        //     rowItem.push({content:data[item], name:item})
-        // })
-        var joined = this.state.rows.concat([{cells:rowItem, indexKey: uniqueIndex}]);
-        this.setState({ rows: joined })
-        console.log(joined)
+        return rowItem;
     }
 
     render(){
@@ -141,7 +178,22 @@ class AddAnnouncement extends React.Component{
                     />
                 }
                 
-                {this.state.modalOpen && <AnnouncementConfigDialog closeModal={this.closeModal} saveModal={this.saveModal} heading={"New Announcement"}/>}
+                {this.state.modalOpen && 
+                    <AnnouncementConfigDialog 
+                        closeModal={this.closeModal}
+                        saveModal={this.saveModal}
+                        heading={"New Announcement"}
+                    />
+                }
+
+                {this.state.editModelOpen && 
+                    <AnnouncementConfigDialog 
+                        closeModal={this.closeModal}
+                        saveModal={this.editSaveModal}
+                        heading={"Edit Announcement"}
+                        editInformations={this.state.editInformations}
+                    />
+                }
             </div>
         )
     }
