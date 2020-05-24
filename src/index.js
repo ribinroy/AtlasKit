@@ -1,13 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
+
+import AddAnnouncement from './AddAnnouncement';
+// import AnnouncementListItem from './AnnouncementListItem';
+// import { Editor } from '@atlaskit/editor-core';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  // <React.StrictMode>
+    <AddAnnouncement />,
+  // </React.StrictMode>,
   document.getElementById('root')
 );
 
