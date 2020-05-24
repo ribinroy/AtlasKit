@@ -24,7 +24,8 @@ class AnnouncementConfigDialog extends React.Component{
             startDate: "",
             endDate: "",
             status: true,
-            checkValildity: false
+            checkValildity: false,
+            rtfValid: false
         }
 
         var realSchema = false;
@@ -62,8 +63,13 @@ class AnnouncementConfigDialog extends React.Component{
         // serializer.encode(editorContent);
         // To convert HTML to editor content
         // serializer.parse(editorContent);
+
+        var rtfValid = true;
+        if(event.dom.textContent == "")
+            rtfValid = false;
         this.setState({
-            announcementMessage:serializer.parse(editorContent)
+            announcementMessage:serializer.parse(editorContent),  // To convert HTML to editor content
+            rtfValid: rtfValid
         })
         
     }
@@ -72,7 +78,6 @@ class AnnouncementConfigDialog extends React.Component{
         this.setState({
             checkValildity: true
         })
-        debugger;
         if(this.fieldsValidated()){
             this.props.saveModal(this.state);
             this.handleCloseModal();
@@ -154,6 +159,10 @@ class AnnouncementConfigDialog extends React.Component{
         const formElementStyle = {
             marginBottom: '15px'
         };
+
+        const rtfValidation={
+            color: 'red'
+        }
         const emailValidationExperssion = /(?!.*\.{2})^([a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(\.[a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)*|"((([\t]*\r\n)?[\t]+)?([\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|\\[\x01-\x09\x0b\x0c\x0d-\x7f\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))*(([\t]*\r\n)?[\t]+)?")@(([a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.)+([a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.?$/i;
         
         return(
@@ -167,7 +176,7 @@ class AnnouncementConfigDialog extends React.Component{
                             placeholder="Announcement Title"
                             maxLength="50"
                             autoComplete="off"
-                            isInvalid={this.state.checkValildity && this.state.announcementTitle == ""}
+                            isInvalid={this.state.checkValildity && this.state.announcementTitle === ""}
                             onChange={this.handleDataChange}
                         />
                     </div>
@@ -210,7 +219,7 @@ class AnnouncementConfigDialog extends React.Component{
                     </div>
 
                     {(this.state.messageType === "Rich Text Editor" || !this.state.messageType) &&
-                        <div style={formElementStyle}>
+                        <div style={formElementStyle} style={this.state.checkValildity && !this.state.rtfValid?rtfValidation:{}}>
                             <label htmlFor="announcementMessage" style={{marginBottom:`10px`}}>Announcement Message</label>
                             <Editor
                                 appearance="comment" 
@@ -230,7 +239,7 @@ class AnnouncementConfigDialog extends React.Component{
                                 name="announcementMessage"
                                 onChange={this.handleDataChange}
                                 autoComplete="off"
-                                isInvalid={this.state.checkValildity && this.state.announcementMessage == "" && this.state.messageType === "HTML"}
+                                isInvalid={this.state.checkValildity && this.state.announcementMessage === "" && this.state.messageType === "HTML"}
                                 placeholder="Announcement HTML"
                                 defaultValue={this.state.announcementMessage?this.state.announcementMessage:""}
                             />

@@ -7,6 +7,7 @@ import VidIcon from '@atlaskit/icon/glyph/vid-play';
 import RefreshIcon from '@atlaskit/icon/glyph/refresh';
 import TrashIcon from '@atlaskit/icon/glyph/trash';
 import DynamicTable from '@atlaskit/dynamic-table';
+import { JIRATransformer } from '@atlaskit/editor-jira-transformer';
 
 import AnnouncementConfigDialog from './AnnouncementConfigDialog';
 
@@ -87,7 +88,6 @@ class AddAnnouncement extends React.Component{
                 editModelOpen: true
             });
         })
-        debugger;
     }
 
     editSaveModal(data){
@@ -101,18 +101,10 @@ class AddAnnouncement extends React.Component{
         
         array.splice(index, 1);
         array.splice(index,0,{cells:rowItem, indexKey: uniqueIndex})
-        debugger;
         this.setState({rows: array});
     }
 
     saveModal(data){
-        // var joined = this.state.announcementsArray.concat(data);
-        // this.setState({ announcementsArray: joined })
-       
-        // Object.keys(data).forEach(function(item){
-        //     rowItem.push({content:data[item], name:item})
-        // })
-        debugger
         var uniqueIndex = data.announcementTitle + "_" + this.state.rows.length + 1;
         var rowItem = this.getSavedDataObject(data, uniqueIndex);
         var joined = this.state.rows.concat([{cells:rowItem, indexKey: uniqueIndex}]);
@@ -143,8 +135,16 @@ class AddAnnouncement extends React.Component{
             }
             else
                 Object.keys(data).forEach(function(key) {
-                    if(key === head.name)
-                        value = (key !== "status")?data[key]: data[key]?"Enabled":"Disabled";
+                    if(key === head.name){
+                        if(key === "announcementMessage" && data["messageType"] == "Rich Text Editor"){
+                            const serializer = new JIRATransformer(data[key].type.schema);
+                            // To encode editor content as markdown
+                            value = serializer.encode(data[key]);
+                            // debugger;
+                        }
+                        else
+                            value = (key !== "status")?data[key]: data[key]?"Enabled":"Disabled";
+                    }
                 });
             var pushObject = {content:value, name:head.name}
             rowItem.push(pushObject)
