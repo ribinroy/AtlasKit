@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@atlaskit/button": "^13.3.12",
+    "@atlaskit/checkbox": "^10.1.12",
     "@atlaskit/datetime-picker": "^9.4.2",
     "@atlaskit/dynamic-table": "^13.7.5",
     "@atlaskit/editor-common": "^45.2.1",

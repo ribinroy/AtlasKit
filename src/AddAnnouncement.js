@@ -11,11 +11,32 @@ import { JIRATransformer } from '@atlaskit/editor-jira-transformer';
 
 import AnnouncementConfigDialog from './AnnouncementConfigDialog';
 
+class Dynamic extends React.Component {
+	markup (val) {
+		return { __html: val }
+	}
+	
+	render () {
+		return <div dangerouslySetInnerHTML={this.markup(this.props.html)} />;
+	}
+}
+
+class TimeFormat extends React.Component {
+	markup (val) {
+		return { __html: val }
+	}
+	
+	render () {
+        const formatedDate = (new Date(this.props.date)).toString().split(":")[0] + ":" + (new Date(this.props.date)).toString().split(":")[1] // DAY Month date year HH:MM
+		return <span>{formatedDate}</span>;
+	}
+}
+
 class AddAnnouncement extends React.Component{
     constructor(){
         super()
         this.state = {
-            modalOpen: true,
+            modalOpen: false,
             editModelOpen: false,
             head: {
                 cells:[
@@ -28,6 +49,7 @@ class AddAnnouncement extends React.Component{
                     {key:"frequency", name: "frequency", content:"Frequency"},
                     {key:"count", name: "count", content:"Count"},
                     {key:"status", name: "status", content:"Status"},
+                    {key:"allowUserToReply", name: "allowUserToReply", content:"User Reply"},
                     {key:"announcementContact", name: "announcementContact", content:"Announcement Contact"},
                     {key:"actions", name: "actions", content:"Actions"}
                 ]
@@ -59,6 +81,8 @@ class AddAnnouncement extends React.Component{
     }
 
     deleteThisItem(thisItemIndex){
+        if(!window.confirm("Please confirm"))
+            return false;
         var array = [...this.state.rows]; // make a separate copy of the array
         var index = false;
         array.forEach(function(item, itemIndex){
@@ -136,14 +160,22 @@ class AddAnnouncement extends React.Component{
             else
                 Object.keys(data).forEach(function(key) {
                     if(key === head.name){
-                        if(key === "announcementMessage" && data["messageType"] == "Rich Text Editor"){
-                            const serializer = new JIRATransformer(data[key].type.schema);
-                            // To encode editor content as markdown
-                            value = serializer.encode(data[key]);
-                            // debugger;
+                        if(key === "announcementMessage"){
+                            value = data[key];
+                            // if(data["messageType"] == "Rich Text Editor"){
+                            //     // for JIRA Transformer
+                            //     const serializer = new JIRATransformer(data[key].type.schema);
+                            //     // To encode editor content as markdown
+                            //     value = serializer.encode(data[key]);
+                            //     value = <Dynamic html={value}/>
+                            // }
+                            value = <Dynamic html={value}/>
+                        }
+                        else if(key === "startDate" || key === "endDate"){
+                            value = <TimeFormat date={data[key]}/>
                         }
                         else
-                            value = (key !== "status")?data[key]: data[key]?"Enabled":"Disabled";
+                            value = (key !== "status")?(key !== "allowUserToReply")?data[key]: data[key]?"Allowed":"Not allowed": data[key]?"Enabled":"Disabled";
                     }
                 });
             var pushObject = {content:value, name:head.name}
@@ -155,8 +187,8 @@ class AddAnnouncement extends React.Component{
     render(){
         return(
             <div className="App">
-                <ButtonGroup appearance="primary">
-                    <Button onClick={this.handleAnnouncementClick}>
+                <ButtonGroup appearance="default">
+                    <Button onClick={this.handleAnnouncementClick} appearance={'default'}>
                         <AddIcon primaryColor="#333" size="medium" style={{marginTop:`5px`}}></AddIcon>
                         <span>Add announcement</span>
                     </Button>
